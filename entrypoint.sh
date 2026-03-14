@@ -32,6 +32,7 @@ echo "::endgroup::"
 # Parse output file for action outputs (sarif format only)
 FINDINGS=0
 CRITICAL=0
+FILES_SCANNED=0
 
 if [ "${FORMAT}" = "sarif" ] && [ -f "${SARIF_CONTAINER_PATH}" ]; then
     FINDINGS=$(python3 -c "
@@ -51,14 +52,63 @@ try:
 except Exception:
     print(0)
 ")
+    FILES_SCANNED=$(python3 -c "
+import json, sys
+try:
+    d = json.load(open('${SARIF_CONTAINER_PATH}'))
+    props = d.get('runs', [{}])[0].get('properties', {})
+    print(len(props.get('scannedFiles', [])))
+except Exception:
+    print(0)
+")
     # Output relative filename — resolved from $GITHUB_WORKSPACE by downstream steps
     echo "sarif_file=${SARIF_FILENAME}" >> "${GITHUB_OUTPUT}"
 fi
 
 echo "findings_count=${FINDINGS}" >> "${GITHUB_OUTPUT}"
 echo "critical_count=${CRITICAL}" >> "${GITHUB_OUTPUT}"
+echo "files_scanned=${FILES_SCANNED}" >> "${GITHUB_OUTPUT}"
 
-echo "Dev Trust Scanner: ${FINDINGS} finding(s) detected (${CRITICAL} critical)"
+echo "Dev Trust Scanner: ${FINDINGS} finding(s) detected (${CRITICAL} critical) — ${FILES_SCANNED} file(s) examined"
+
+# Write GitHub Actions step summary
+if [ -n "${GITHUB_STEP_SUMMARY}" ]; then
+    python3 -c "
+import json, sys
+
+sarif_file = '${SARIF_CONTAINER_PATH}'
+scan_path  = '${SCAN_PATH}'
+findings   = ${FINDINGS}
+critical   = ${CRITICAL}
+
+try:
+    d = json.load(open(sarif_file))
+    props = d.get('runs', [{}])[0].get('properties', {})
+    scanned = props.get('scannedFiles', [])
+except Exception:
+    scanned = []
+
+lines = []
+lines.append('## Dev Trust Scanner')
+lines.append('')
+lines.append('| | |')
+lines.append('|---|---|')
+lines.append(f'| **Scan target** | \`{scan_path}\` |')
+lines.append(f'| **Files examined** | {len(scanned)} |')
+lines.append(f'| **Findings** | {findings} |')
+lines.append(f'| **Critical** | {critical} |')
+lines.append('')
+
+if scanned:
+    lines.append('### Files examined')
+    for f in scanned:
+        lines.append(f'- \`{f}\`')
+else:
+    lines.append('> No supported files found — nothing to scan.')
+
+print('\n'.join(lines))
+" >> "${GITHUB_STEP_SUMMARY}" 2>/dev/null || true
+fi
 
 # Fail if configured and findings exist
 if [ "${INPUT_FAIL_ON_FINDINGS}" = "true" ] && [ "${FINDINGS}" -gt "0" ]; then
