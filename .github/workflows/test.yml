@@ -107,6 +107,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run scanner with tenant-id
+        id: scan
         uses: ./
         with:
           scan_path: tests/fixtures/malicious-npm
@@ -116,7 +117,7 @@ jobs:
 
       - name: Verify tenant ID in SARIF
         run: |
-          SARIF_FILE="/tmp/dev-trust-scanner-results.sarif"
+          SARIF_FILE="${{ steps.scan.outputs.sarif_file }}"
           TENANT=$(python3 -c "
           import json
           d = json.load(open('${SARIF_FILE}'))
