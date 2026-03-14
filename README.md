@@ -34,7 +34,7 @@ jobs:
 
       - name: Run Dev Trust Scanner
         id: scan
-        uses: ymlsurgeon/dev-trust-scanner-action@v1
+        uses: ymlsurgeon/dev-trust-scanner-action@main
 
       - name: Upload to GitHub Security
         if: always()
@@ -52,7 +52,7 @@ Findings appear as inline annotations on pull requests via GitHub code scanning.
 ```yaml
       - name: Run Dev Trust Scanner
         id: scan
-        uses: ymlsurgeon/dev-trust-scanner-action@v1
+        uses: ymlsurgeon/dev-trust-scanner-action@main
         with:
           webhook_url: ${{ secrets.DTS_WEBHOOK_URL }}
           tenant_id: "acme-corp"
@@ -97,7 +97,7 @@ Findings appear as inline annotations on pull requests via GitHub code scanning.
 |---|---|
 | `findings_count` | Total findings at or above `severity_threshold` |
 | `critical_count` | Number of CRITICAL findings |
-| `sarif_file` | Path to SARIF file (set when `format: sarif`) |
+| `sarif_file` | Relative path to SARIF file in the workspace (set when `format: sarif`). Use `${GITHUB_WORKSPACE}/${{ steps.scan.outputs.sarif_file }}` in `run:` steps. |
 
 ---
 
@@ -120,7 +120,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: ymlsurgeon/dev-trust-scanner-action@v1
+      - uses: ymlsurgeon/dev-trust-scanner-action@main
         with:
           webhook_url: ${{ secrets.DTS_WEBHOOK_URL }}
           tenant_id: ${{ vars.DTS_TENANT_ID }}
@@ -135,7 +135,7 @@ jobs:
 ## Block PRs on Critical Findings
 
 ```yaml
-      - uses: ymlsurgeon/dev-trust-scanner-action@v1
+      - uses: ymlsurgeon/dev-trust-scanner-action@main
         with:
           severity_threshold: high
           fail_on_findings: 'true'
