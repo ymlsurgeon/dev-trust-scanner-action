@@ -155,19 +155,6 @@ jobs:
 | `.vscode/tasks.json` | Auto-execution on folder open (`runOn: folderOpen`), obfuscated commands, hidden output, suspicious shell patterns |
 | `.github/workflows/*.yml` | Workflow injection, self-hosted runner abuse/registration, secret exfiltration, suspicious triggers, Shai-Hulud campaign markers |
 
-### GitHub Actions Rules
-
-| Rule ID | Severity | Description |
-|---|---|---|
-| GHA-001 | CRITICAL | Known malicious workflow filename (Shai-Hulud campaign) |
-| GHA-002 | HIGH | Suspicious trigger combination (`workflow_dispatch` + `schedule` — persistence pattern) |
-| GHA-003 | HIGH | External script download and execution (`curl \| bash`, `wget \| sh`) |
-| GHA-004 | HIGH | Environment variable / secret dumping (`secrets.*`, `$GITHUB_TOKEN`) |
-| GHA-005 | MEDIUM | Self-hosted runner usage (`runs-on: self-hosted`) |
-| GHA-006 | CRITICAL | Self-hosted runner registration in workflow |
-| GHA-007 | CRITICAL | Runner service installation (`svc.sh install`, `systemctl`) |
-
----
 
 ## About the Scanner
 
