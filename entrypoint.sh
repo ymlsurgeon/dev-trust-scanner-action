@@ -15,8 +15,15 @@ SARIF_CONTAINER_PATH="/github/workspace/${SARIF_FILENAME}"
 # Build command as array to avoid shell injection via eval
 CMD_ARGS=("${SCAN_PATH}" "--format" "${FORMAT}" "--severity" "${SEVERITY}")
 
-[ -n "${INPUT_WEBHOOK_URL}" ]  && CMD_ARGS+=("--webhook-url" "${INPUT_WEBHOOK_URL}")
-[ -n "${INPUT_TENANT_ID}" ]    && CMD_ARGS+=("--tenant-id"   "${INPUT_TENANT_ID}")
+[ -n "${INPUT_WEBHOOK_URL}" ]     && CMD_ARGS+=("--webhook-url"    "${INPUT_WEBHOOK_URL}")
+[ -n "${INPUT_WEBHOOK_FORMAT}" ]  && CMD_ARGS+=("--webhook-format" "${INPUT_WEBHOOK_FORMAT}")
+[ -n "${INPUT_TENANT_ID}" ]       && CMD_ARGS+=("--tenant-id"      "${INPUT_TENANT_ID}")
+
+# Auto-populate repo from GitHub context; actor defaults to GITHUB_ACTOR
+[ -n "${GITHUB_REPOSITORY}" ]     && CMD_ARGS+=("--repo"           "${GITHUB_REPOSITORY}")
+ACTOR="${INPUT_ACTOR:-${GITHUB_ACTOR}}"
+[ -n "${ACTOR}" ]                 && CMD_ARGS+=("--actor"          "${ACTOR}")
+[ -n "${INPUT_PR_AUTHOR}" ]       && CMD_ARGS+=("--pr-author"      "${INPUT_PR_AUTHOR}")
 
 # Always write SARIF to file so GitHub upload-sarif can find it
 [ "${FORMAT}" = "sarif" ] && CMD_ARGS+=("--output" "${SARIF_CONTAINER_PATH}")

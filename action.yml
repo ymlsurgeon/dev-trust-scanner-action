@@ -27,6 +27,16 @@ inputs:
     description: 'Exit with code 1 if any findings are detected at or above severity_threshold (true/false)'
     required: false
     default: 'false'
+  webhook_format:
+    description: 'Webhook payload format: ndjson (one line per finding, default) or sarif (full blob)'
+    required: false
+    default: 'ndjson'
+  actor:
+    description: 'User who triggered the scan (auto-populated from github.actor if not set)'
+    required: false
+  pr_author:
+    description: 'User who created the pull request or commit'
+    required: false
 
 outputs:
   findings_count:
